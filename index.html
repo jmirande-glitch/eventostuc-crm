@@ -27,6 +27,9 @@
   #loginScreen label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
   #loginScreen button{width:100%;padding:11px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;font-size:14px;}
   #loginError{color:#c0392b;font-size:13px;min-height:18px;}
+  .pw-wrap{position:relative;}
+  .pw-wrap input{margin-bottom:0;padding-right:52px;}
+  .pw-toggle{position:absolute;right:8px;top:6px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:6px 6px;width:auto;text-transform:uppercase;letter-spacing:.03em;}
 
   /* ---------- APP SHELL ---------- */
   #app{display:none;}
@@ -39,24 +42,30 @@
   header.top .who{font-size:13px;color:#cfd6dd;display:flex;align-items:center;gap:12px;}
   header.top .who button{background:none;border:1px solid #445;color:#cfd6dd;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;}
 
-  main{padding:24px;max-width:1280px;margin:0 auto;}
+  main{padding:24px;max-width:1320px;margin:0 auto;}
   .view{display:none;}
   .view.active{display:block;}
 
-  /* ---------- DASHBOARD ---------- */
-  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
-  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
-  .kpi .num{font-family:'Fraunces',serif;font-size:28px;font-weight:700;}
-  .kpi .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
-  .stage-bars{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;}
-  .stage-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;font-size:13px;}
-  .stage-row .lbl{width:150px;color:var(--muted);}
-  .stage-row .bar{flex:1;background:#eee;height:16px;border-radius:8px;overflow:hidden;}
-  .stage-row .fill{height:100%;background:var(--blue);}
-  .stage-row .n{width:30px;text-align:right;font-family:'JetBrains Mono',monospace;}
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;gap:12px;flex-wrap:wrap;}
+  .page-head p{color:var(--muted);font-size:14px;margin-top:4px;}
+  .page-head .actions{display:flex;gap:10px;}
 
-  /* ---------- FILTERS ---------- */
-  .filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;align-items:center;}
+  /* ---------- KPIs / DASHBOARD (arriba del pipeline) ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+  .kpi .num{font-family:'Fraunces',serif;font-size:26px;font-weight:700;}
+  .kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+  .kpi .sub{font-size:11px;color:#3a8a5c;margin-top:4px;}
+  .kpi.forecast{background:linear-gradient(135deg,#fff,#fbf3e3);border-color:var(--amber);}
+
+  /* ---------- FILTERS / CHIPS ---------- */
+  .filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center;justify-content:space-between;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip{padding:8px 16px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer;font-family:inherit;color:var(--ink);}
+  .chip.active{background:var(--amber);border-color:var(--amber);color:var(--ink);font-weight:600;}
+  .view-toggle{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .view-toggle button{background:#fff;border:none;padding:7px 16px;cursor:pointer;font-family:inherit;font-size:13px;color:var(--muted);}
+  .view-toggle button.active{background:var(--ink);color:#fff;}
   .filters select,.filters input{padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:13px;background:#fff;}
   .filters input[type=text]{min-width:200px;}
   .btn{padding:9px 16px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;font-size:13px;font-family:inherit;}
@@ -67,14 +76,18 @@
 
   /* ---------- PIPELINE / KANBAN ---------- */
   .pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;overflow-x:auto;}
-  .stage-col{background:#efeadc;border-radius:12px;padding:10px;min-height:200px;}
+  .stage-col{background:#efeadc;border-radius:12px;padding:10px;min-height:220px;transition:background .15s;}
+  .stage-col.drag-over{background:#e3dcc4;outline:2px dashed var(--amber);}
   .stage-col h3{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;}
   .stage-col.draft-col{background:#f2e5d0;}
-  .lead-card{background:#fff;border-radius:9px;padding:10px 12px;margin-bottom:8px;cursor:pointer;border:1px solid var(--line);font-size:13px;}
+  .lead-card{background:#fff;border-radius:9px;padding:10px 12px;margin-bottom:8px;cursor:grab;border:1px solid var(--line);font-size:13px;}
+  .lead-card:active{cursor:grabbing;}
+  .lead-card.dragging{opacity:.4;}
   .lead-card:hover{border-color:var(--blue);}
   .lead-card .lc-top{display:flex;justify-content:space-between;align-items:start;}
   .lead-card .lc-empresa{font-weight:600;}
   .lead-card .lc-monto{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+  .lead-card .lc-fecha{font-size:11px;color:var(--blue);margin-top:2px;display:flex;align-items:center;gap:4px;}
   .badge{font-size:10px;padding:2px 6px;border-radius:5px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;}
   .badge.inbound{background:#DCEBFB;color:var(--blue);}
   .badge.outbound{background:#FBE7CE;color:#a8630f;}
@@ -85,11 +98,12 @@
   table.leads-table th{background:#efeadc;text-align:left;padding:9px 10px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
   table.leads-table td{padding:9px 10px;border-top:1px solid var(--line);}
   table.leads-table tr:hover{background:#faf9f5;cursor:pointer;}
+  table.leads-table tr.overdue td{color:#c0392b;}
 
   /* ---------- MODAL ---------- */
   .modal-bg{display:none;position:fixed;inset:0;background:rgba(22,35,46,.45);z-index:50;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;}
   .modal-bg.active{display:flex;}
-  .modal{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:640px;}
+  .modal{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:680px;}
   .modal h2{margin-bottom:18px;}
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .form-grid label{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);display:block;margin-bottom:4px;}
@@ -104,8 +118,22 @@
   .wf-item{display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0;}
   .wf-item.done label{text-decoration:line-through;color:var(--muted);}
 
-  .items-check{display:flex;flex-wrap:wrap;gap:8px;}
-  .items-check label{display:flex;align-items:center;gap:5px;font-size:12px;background:#f4f1e8;padding:5px 9px;border-radius:6px;text-transform:none;letter-spacing:0;color:var(--ink);}
+  .tasks-box{margin-top:16px;background:#faf9f5;border:1px dashed var(--amber);border-radius:10px;padding:14px;}
+  .tasks-box h4{font-size:12px;text-transform:uppercase;color:#a8630f;margin-bottom:10px;}
+  .task-row{display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0;}
+  .task-row.done label{text-decoration:line-through;color:var(--muted);}
+  .task-row .venc{margin-left:auto;font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+  .task-row.overdue .venc{color:#c0392b;font-weight:600;}
+  .task-add{display:flex;gap:6px;margin-top:10px;}
+  .task-add input[type=text]{flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:12px;}
+  .task-add input[type=date]{padding:7px 9px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:12px;}
+
+  .cot-groups{display:flex;flex-direction:column;gap:10px;}
+  .cot-group{border:1px solid var(--line);border-radius:8px;padding:10px 12px;}
+  .cot-group-head{display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .cot-opt{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;cursor:pointer;}
+  .cot-opt.locked{cursor:default;color:var(--muted);}
+  .cot-opt .price{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
 
   .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
 
@@ -123,9 +151,12 @@
   <h1 style="font-size:22px;">CRM · EventosTuc</h1>
   <div class="box">
     <label>Email</label>
-    <input type="email" id="loginEmail" placeholder="tu@eventostuc.com.ar">
+    <input type="email" id="loginEmail" placeholder="tu@eventostuc.com.ar" onkeydown="if(event.key==='Enter')doLogin()">
     <label>Contraseña</label>
-    <input type="password" id="loginPass" placeholder="••••••••">
+    <div class="pw-wrap">
+      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <button type="button" class="pw-toggle" onclick="togglePw()">Mostrar</button>
+    </div>
     <button onclick="doLogin()">Ingresar</button>
     <div id="loginError"></div>
   </div>
@@ -136,9 +167,8 @@
   <header class="top">
     <div class="brand"><span class="dot"></span> EventosTuc CRM</div>
     <nav class="tabs">
-      <button data-view="dashboard" class="active" onclick="showView('dashboard')">Dashboard</button>
-      <button data-view="pipeline" onclick="showView('pipeline')">Pipeline</button>
-      <button data-view="lista" onclick="showView('lista')">Listado</button>
+      <button data-view="pipeline" class="active" onclick="showView('pipeline')">Pipeline</button>
+      <button data-view="tareas" onclick="showView('tareas')">Tareas</button>
       <button data-view="carga" onclick="showView('carga')">Carga masiva</button>
     </nav>
     <div class="who">
@@ -149,58 +179,58 @@
   </header>
 
   <main>
-    <!-- DASHBOARD -->
-    <section id="view-dashboard" class="view active">
+    <!-- PIPELINE (dashboard + kanban/list) -->
+    <section id="view-pipeline" class="view active">
+      <div class="page-head">
+        <div>
+          <h1>Pipeline comercial</h1>
+          <p>Todos tus leads y clientes, de la consulta a la firma.</p>
+        </div>
+      </div>
+
       <div class="kpis" id="kpis"></div>
-      <div class="stage-bars">
-        <h3 style="margin-bottom:14px;">Pipeline por etapa</h3>
-        <div id="stageBars"></div>
-      </div>
-    </section>
 
-    <!-- PIPELINE (kanban) -->
-    <section id="view-pipeline" class="view">
       <div class="filters">
-        <input type="text" id="fSearch" placeholder="Buscar empresa, persona, evento..." oninput="renderAll()">
-        <select id="fOrigen" onchange="renderAll()">
-          <option value="">Origen: todos</option>
-          <option value="inbound">Inbound</option>
-          <option value="outbound">Outbound</option>
-        </select>
-        <select id="fOwner" onchange="renderAll()">
-          <option value="">Responsable: todos</option>
-          <option value="Javier">Javier</option>
-          <option value="Lourdes">Lourdes</option>
-        </select>
-        <label style="font-size:12px;display:flex;align-items:center;gap:5px;"><input type="checkbox" id="fDrafts" onchange="renderAll()"> mostrar borradores</label>
+        <div class="chips" id="chipsTipo"></div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <input type="text" id="fSearch" placeholder="Buscar empresa, persona, evento..." oninput="renderAll()" style="min-width:220px;">
+          <select id="fOrigen" onchange="renderAll()">
+            <option value="">Origen: todos</option>
+            <option value="inbound">Inbound</option>
+            <option value="outbound">Outbound</option>
+          </select>
+          <label style="font-size:12px;display:flex;align-items:center;gap:5px;white-space:nowrap;"><input type="checkbox" id="fDrafts" onchange="renderAll()"> borradores</label>
+          <div class="view-toggle">
+            <button id="btnKanban" class="active" onclick="setPipelineMode('kanban')">Kanban</button>
+            <button id="btnList" onclick="setPipelineMode('list')">Lista</button>
+          </div>
+        </div>
       </div>
+
       <div class="pipeline" id="pipelineCols"></div>
-    </section>
 
-    <!-- LISTADO -->
-    <section id="view-lista" class="view">
-      <div class="filters">
-        <input type="text" id="fSearch2" placeholder="Buscar..." oninput="renderAll()">
-        <select id="fStage2" onchange="renderAll()">
-          <option value="">Etapa: todas</option>
-          <option value="contactar">Contactar</option>
-          <option value="contactado">Contactado</option>
-          <option value="propuesta_enviada">Propuesta enviada</option>
-          <option value="hot_deal">Hot deal</option>
-          <option value="vendido">Vendido</option>
-          <option value="perdido">Perdido</option>
-        </select>
-        <select id="fOrigen2" onchange="renderAll()">
-          <option value="">Origen: todos</option>
-          <option value="inbound">Inbound</option>
-          <option value="outbound">Outbound</option>
-        </select>
-      </div>
-      <table class="leads-table">
+      <table class="leads-table" id="pipelineTable" style="display:none;">
         <thead><tr>
           <th>Empresa</th><th>Persona</th><th>Evento</th><th>Fecha</th><th>Monto</th><th>Origen</th><th>Etapa</th>
         </tr></thead>
         <tbody id="listaBody"></tbody>
+      </table>
+    </section>
+
+    <!-- TAREAS -->
+    <section id="view-tareas" class="view">
+      <div class="page-head">
+        <div>
+          <h1>Tareas de seguimiento</h1>
+          <p>Todas las tareas pendientes, ordenadas por vencimiento.</p>
+        </div>
+      </div>
+      <div class="filters">
+        <label style="font-size:12px;display:flex;align-items:center;gap:5px;"><input type="checkbox" id="fTareasCompletadas" onchange="renderTareas()"> mostrar completadas</label>
+      </div>
+      <table class="leads-table">
+        <thead><tr><th></th><th>Tarea</th><th>Lead</th><th>Vencimiento</th><th>Responsable</th></tr></thead>
+        <tbody id="tareasBody"></tbody>
       </table>
     </section>
 
@@ -210,8 +240,8 @@
         <h3 style="margin-bottom:8px;">Carga masiva por CSV</h3>
         <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
           Columnas esperadas (en este orden, con encabezado):<br>
-          <mono style="font-size:11px;">empresa,persona,instagram,web,telefono,mail,evento_nombre,evento_fecha,evento_lugar,monto,origen,stage,owner,notes</mono><br>
-          <span style="font-size:12px;">Fecha en formato AAAA-MM-DD. Origen: inbound/outbound. Stage: contactar/contactado/propuesta_enviada/hot_deal/vendido/perdido.</span>
+          <mono style="font-size:11px;">empresa,persona,instagram,web,telefono,mail,evento_nombre,evento_fecha,evento_lugar,monto,origen,stage,tipo_evento,owner,notes</mono><br>
+          <span style="font-size:12px;">Fecha en formato AAAA-MM-DD. Origen: inbound/outbound. Stage: contactar/contactado/propuesta_enviada/hot_deal/vendido/perdido. Tipo evento: pago/gratis.</span>
         </p>
         <input type="file" id="csvFile" accept=".csv">
         <div style="margin-top:14px;">
@@ -241,6 +271,12 @@
       <div><label>Fecha del evento</label><input type="date" id="f_evento_fecha"></div>
       <div><label>Lugar del evento</label><input id="f_evento_lugar"></div>
       <div><label>Monto ($)</label><input type="number" id="f_monto"></div>
+      <div><label>Evento pago o gratis</label>
+        <select id="f_tipo_evento">
+          <option value="pago">Pago</option>
+          <option value="gratis">Gratis</option>
+        </select>
+      </div>
       <div><label>Origen</label>
         <select id="f_origen"><option value="inbound">Inbound</option><option value="outbound">Outbound</option></select>
       </div>
@@ -258,13 +294,8 @@
         </select>
       </div>
       <div><label>Motivo (si perdido)</label><input id="f_motivo_perdido"></div>
-      <div class="full"><label>Pedido (ítems solicitados)</label>
-        <div class="items-check">
-          <label><input type="checkbox" value="Landing + inscripción" class="pedido-item"> Landing + inscripción</label>
-          <label><input type="checkbox" value="Checkout con pago" class="pedido-item"> Checkout con pago</label>
-          <label><input type="checkbox" value="Panel admin" class="pedido-item"> Panel admin</label>
-          <label><input type="checkbox" value="Certificados" class="pedido-item"> Certificados</label>
-        </div>
+      <div class="full"><label>Pedido (ítems del sitio público)</label>
+        <div class="cot-groups" id="cotGroupsForm"></div>
       </div>
       <div class="full"><label>Notas</label><textarea id="f_notes" rows="3"></textarea></div>
     </div>
@@ -272,6 +303,16 @@
     <div class="workflow-box" id="workflowBox" style="display:none;">
       <h4>Workflow post-venta (interno, no visible al cliente)</h4>
       <div id="wfList"></div>
+    </div>
+
+    <div class="tasks-box" id="tasksBoxModal" style="display:none;">
+      <h4>Tareas de seguimiento de este lead</h4>
+      <div id="taskListModal"></div>
+      <div class="task-add">
+        <input type="text" id="newTaskTitulo" placeholder="Nueva tarea (ej: llamar para confirmar)">
+        <input type="date" id="newTaskVenc">
+        <button class="btn ghost" onclick="agregarTarea()">+ Agregar</button>
+      </div>
     </div>
 
     <div class="modal-actions">
@@ -299,10 +340,71 @@ const STAGES = [
   ["perdido","Perdido"],
 ];
 
+const TIPOS_EVENTO = [
+  ["","Todos"],
+  ["pago","Pago"],
+  ["gratis","Gratis"],
+];
+
+// Mismos ítems y precios que el cotizador público de eventostuc.com.ar
+const COT_GROUPS = [
+  { id:'landing', title:'Landing', type:'locked',
+    options:[ {id:'landing_base', name:'Landing', price:160000} ] },
+  { id:'checkout', title:'Check out', type:'radio',
+    options:[
+      {id:'checkout_simple', name:'Simple', price:75000},
+      {id:'checkout_complejo', name:'Complejo', price:140000},
+      {id:'checkout_integrado', name:'Integrado', price:160000},
+    ]},
+  { id:'dominio', title:'Dominio', type:'radio',
+    options:[
+      {id:'dominio_publico', name:'Público', price:50000},
+      {id:'dominio_propio', name:'Propio', price:120000},
+    ]},
+  { id:'acreditacion', title:'Acreditación', type:'checkbox',
+    options:[ {id:'acreditacion_on', name:'Acreditación', price:180000} ] },
+  { id:'dashboard', title:'Dashboard', type:'checkbox',
+    options:[ {id:'dashboard_on', name:'Dashboard', price:100000} ] },
+  { id:'autogestion', title:'Autogestión de admin', type:'toggle',
+    options:[
+      {id:'autogestion_simple', name:'Simple', price:100000},
+      {id:'autogestion_compleja', name:'Compleja', price:160000},
+    ]},
+  { id:'comunicacion', title:'Comunicación', type:'toggle',
+    options:[
+      {id:'comunicacion_simple', name:'Simple', price:140000},
+      {id:'comunicacion_compleja', name:'Compleja', price:170000},
+    ]},
+  { id:'certificado', title:'Certificado', type:'checkbox',
+    options:[ {id:'certificado_on', name:'Certificado', price:180000} ] },
+  { id:'encuestas', title:'Encuestas', type:'checkbox',
+    options:[ {id:'encuestas_on', name:'Encuestas', price:160000} ] },
+  { id:'escritorio', title:'Adaptación a escritorio', type:'checkbox',
+    options:[ {id:'escritorio_on', name:'Adaptación a escritorio', price:130000} ] },
+  { id:'soporte', title:'Soporte', type:'radio',
+    options:[
+      {id:'soporte_basico', name:'Básico', price:90000},
+      {id:'soporte_medio', name:'Medio', price:130000},
+      {id:'soporte_alto', name:'Alto', price:200000},
+    ]},
+];
+
 let LEADS = [];
+let TAREAS = [];
 let currentEditId = null;
+let pipelineMode = 'kanban';
+let filtroTipo = '';
+let cotSelected = {}; // optId -> true, para el form del modal
+let draggedLeadId = null;
 
 /* ======================= AUTH ======================= */
+function togglePw(){
+  const inp = document.getElementById('loginPass');
+  const btn = document.querySelector('.pw-toggle');
+  if(inp.type === 'password'){ inp.type = 'text'; btn.textContent = 'Ocultar'; }
+  else { inp.type = 'password'; btn.textContent = 'Mostrar'; }
+}
+
 async function doLogin(){
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPass').value;
@@ -317,7 +419,9 @@ async function afterLogin(){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('whoami').textContent = user.email;
+  renderChipsTipo();
   await cargarLeads();
+  await cargarTareas();
 }
 
 async function checkSession(){
@@ -334,39 +438,65 @@ async function cargarLeads(){
   renderAll();
 }
 
+async function cargarTareas(){
+  const { data, error } = await sb.from('tareas').select('*, leads(empresa)').order('vencimiento', { ascending:true, nullsFirst:false });
+  if(error){ console.warn('Error cargando tareas (¿corriste migracion_v2.sql?):', error.message); TAREAS = []; return; }
+  TAREAS = data || [];
+  renderTareas();
+}
+
 function showView(v){
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
-  renderAll();
+  if(v==='pipeline') renderAll();
+  if(v==='tareas') renderTareas();
 }
 
 function fmtMoney(n){ if(n==null) return '—'; return '$'+Number(n).toLocaleString('es-AR'); }
+function fmtFecha(d){ if(!d) return ''; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; }
 
-/* ======================= RENDER: DASHBOARD ======================= */
-function renderDashboard(){
+/* ======================= KPIs + PRONÓSTICO ======================= */
+function renderKpis(){
   const real = LEADS.filter(l=>!l.is_draft);
   const vendidos = real.filter(l=>l.stage==='vendido');
   const activos = real.filter(l=>!['vendido','perdido'].includes(l.stage));
-  const inbound = real.filter(l=>l.origen==='inbound').length;
-  const outbound = real.filter(l=>l.origen==='outbound').length;
+  const propuestas = real.filter(l=>l.stage==='propuesta_enviada');
+  const hotDeals = real.filter(l=>l.stage==='hot_deal');
   const montoVendido = vendidos.reduce((a,l)=>a+(Number(l.monto)||0),0);
-  const drafts = LEADS.filter(l=>l.is_draft).length;
+  const pronostico = hotDeals.reduce((a,l)=>a+(Number(l.monto)||0),0);
+  const totalConEtapaFinal = vendidos.length + real.filter(l=>l.stage==='perdido').length;
+  const conversion = totalConEtapaFinal ? Math.round((vendidos.length/totalConEtapaFinal)*100) : 0;
 
   document.getElementById('kpis').innerHTML = `
-    <div class="kpi"><div class="num">${real.length}</div><div class="label">Leads totales</div></div>
-    <div class="kpi"><div class="num">${activos.length}</div><div class="label">Activos en pipeline</div></div>
-    <div class="kpi"><div class="num">${vendidos.length}</div><div class="label">Vendidos</div></div>
-    <div class="kpi"><div class="num">${fmtMoney(montoVendido)}</div><div class="label">Monto vendido</div></div>
-    <div class="kpi"><div class="num">${inbound} / ${outbound}</div><div class="label">Inbound / Outbound</div></div>
-    <div class="kpi"><div class="num">${drafts}</div><div class="label">Solicitudes sin enviar</div></div>
+    <div class="kpi"><div class="num">${activos.length}</div><div class="label">Leads activos</div></div>
+    <div class="kpi"><div class="num">${conversion}%</div><div class="label">Tasa de conversión</div></div>
+    <div class="kpi"><div class="num">${propuestas.length}</div><div class="label">Presupuestos enviados</div></div>
+    <div class="kpi"><div class="num">${fmtMoney(montoVendido)}</div><div class="label">Ingresos ganados</div><div class="sub">Eventos confirmados</div></div>
+    <div class="kpi forecast"><div class="num">${fmtMoney(pronostico)}</div><div class="label">Pronóstico (hot deals)</div><div class="sub">${hotDeals.length} deal${hotDeals.length!==1?'s':''} en negociación avanzada</div></div>
   `;
+}
 
-  const max = Math.max(1, ...STAGES.map(([k])=>real.filter(l=>l.stage===k).length));
-  document.getElementById('stageBars').innerHTML = STAGES.map(([k,label])=>{
-    const n = real.filter(l=>l.stage===k).length;
-    return `<div class="stage-row"><div class="lbl">${label}</div><div class="bar"><div class="fill" style="width:${(n/max*100)||0}%"></div></div><div class="n">${n}</div></div>`;
-  }).join('');
+/* ======================= CHIPS DE TIPO ======================= */
+function renderChipsTipo(){
+  document.getElementById('chipsTipo').innerHTML = TIPOS_EVENTO.map(([val,label])=>
+    `<button class="chip ${filtroTipo===val?'active':''}" onclick="setFiltroTipo('${val}')">${label}</button>`
+  ).join('');
+}
+function setFiltroTipo(val){
+  filtroTipo = val;
+  renderChipsTipo();
+  renderAll();
+}
+
+/* ======================= TOGGLE KANBAN / LIST ======================= */
+function setPipelineMode(mode){
+  pipelineMode = mode;
+  document.getElementById('btnKanban').classList.toggle('active', mode==='kanban');
+  document.getElementById('btnList').classList.toggle('active', mode==='list');
+  document.getElementById('pipelineCols').style.display = mode==='kanban' ? 'grid' : 'none';
+  document.getElementById('pipelineTable').style.display = mode==='list' ? 'table' : 'none';
+  renderAll();
 }
 
 /* ======================= FILTER HELPERS ======================= */
@@ -375,25 +505,26 @@ function matchSearch(l, q){
   q = q.toLowerCase();
   return [l.empresa,l.persona,l.evento_nombre,l.mail].filter(Boolean).join(' ').toLowerCase().includes(q);
 }
+function leadsFiltrados(){
+  const q = document.getElementById('fSearch').value;
+  const fOrigen = document.getElementById('fOrigen').value;
+  return LEADS.filter(l=>{
+    if(fOrigen && l.origen!==fOrigen) return false;
+    if(filtroTipo && l.tipo_evento!==filtroTipo) return false;
+    return matchSearch(l,q);
+  });
+}
 
 /* ======================= RENDER: PIPELINE (kanban) ======================= */
 function renderPipeline(){
-  const q = document.getElementById('fSearch').value;
-  const fOrigen = document.getElementById('fOrigen').value;
-  const fOwner = document.getElementById('fOwner').value;
   const showDrafts = document.getElementById('fDrafts').checked;
-
-  let list = LEADS.filter(l=>{
-    if(l.is_draft && !showDrafts) return false;
-    if(fOrigen && l.origen!==fOrigen) return false;
-    if(fOwner && l.owner!==fOwner) return false;
-    return matchSearch(l,q);
-  });
+  let list = leadsFiltrados();
 
   let html = '';
   STAGES.forEach(([key,label])=>{
     const items = list.filter(l=>l.stage===key && !l.is_draft);
-    html += `<div class="stage-col"><h3>${label} <span>${items.length}</span></h3>`;
+    html += `<div class="stage-col" data-stage="${key}" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'${key}')">
+      <h3>${label} <span>${items.length}</span></h3>`;
     items.forEach(l=> html += leadCardHtml(l));
     html += `</div>`;
   });
@@ -409,35 +540,55 @@ function renderPipeline(){
 }
 
 function leadCardHtml(l){
-  return `<div class="lead-card" onclick="openEditLead('${l.id}')">
+  const fecha = l.evento_fecha ? `<div class="lc-fecha">📅 ${fmtFecha(l.evento_fecha)}</div>` : '';
+  return `<div class="lead-card" draggable="${l.is_draft?'false':'true'}" ondragstart="onDragStart(event,'${l.id}')" ondragend="onDragEnd(event)" onclick="openEditLead('${l.id}')">
     <div class="lc-top">
       <div class="lc-empresa">${l.empresa || '(sin empresa)'}</div>
       <span class="badge ${l.is_draft?'draft':l.origen}">${l.is_draft?'borrador':l.origen}</span>
     </div>
     <div style="color:var(--muted);margin:3px 0;">${l.evento_nombre||''}</div>
+    ${fecha}
     <div class="lc-monto">${fmtMoney(l.monto)}</div>
   </div>`;
 }
 
+/* ---- Drag & drop entre columnas ---- */
+function onDragStart(ev, leadId){
+  draggedLeadId = leadId;
+  ev.target.classList.add('dragging');
+  ev.dataTransfer.effectAllowed = 'move';
+}
+function onDragEnd(ev){
+  ev.target.classList.remove('dragging');
+  draggedLeadId = null;
+}
+function onDragOver(ev){
+  ev.preventDefault();
+  ev.currentTarget.classList.add('drag-over');
+}
+function onDragLeave(ev){
+  ev.currentTarget.classList.remove('drag-over');
+}
+async function onDrop(ev, nuevoStage){
+  ev.preventDefault();
+  ev.currentTarget.classList.remove('drag-over');
+  if(!draggedLeadId) return;
+  const lead = LEADS.find(l=>l.id===draggedLeadId);
+  if(!lead || lead.stage === nuevoStage) return;
+  const { error } = await sb.from('leads').update({ stage: nuevoStage }).eq('id', draggedLeadId);
+  if(error){ alert('Error moviendo el lead: '+error.message); return; }
+  await cargarLeads();
+}
+
 /* ======================= RENDER: LISTADO ======================= */
 function renderLista(){
-  const q = document.getElementById('fSearch2').value;
-  const fStage = document.getElementById('fStage2').value;
-  const fOrigen = document.getElementById('fOrigen2').value;
-
-  let list = LEADS.filter(l=>{
-    if(l.is_draft) return false;
-    if(fStage && l.stage!==fStage) return false;
-    if(fOrigen && l.origen!==fOrigen) return false;
-    return matchSearch(l,q);
-  });
-
+  let list = leadsFiltrados().filter(l=>!l.is_draft);
   document.getElementById('listaBody').innerHTML = list.map(l=>`
     <tr onclick="openEditLead('${l.id}')">
       <td>${l.empresa||''}</td>
       <td>${l.persona||''}</td>
       <td>${l.evento_nombre||''}</td>
-      <td>${l.evento_fecha||''}</td>
+      <td>${fmtFecha(l.evento_fecha)}</td>
       <td>${fmtMoney(l.monto)}</td>
       <td><span class="badge ${l.origen}">${l.origen}</span></td>
       <td>${STAGES.find(s=>s[0]===l.stage)?.[1]||l.stage}</td>
@@ -445,9 +596,77 @@ function renderLista(){
 }
 
 function renderAll(){
-  renderDashboard();
-  renderPipeline();
-  renderLista();
+  renderKpis();
+  if(pipelineMode==='kanban') renderPipeline();
+  else renderLista();
+}
+
+/* ======================= TAREAS (vista global) ======================= */
+function renderTareas(){
+  const verCompletadas = document.getElementById('fTareasCompletadas').checked;
+  const hoy = new Date().toISOString().slice(0,10);
+  let list = TAREAS.filter(t=> verCompletadas ? true : !t.completada);
+  list = [...list].sort((a,b)=>{
+    if(!a.vencimiento) return 1;
+    if(!b.vencimiento) return -1;
+    return a.vencimiento.localeCompare(b.vencimiento);
+  });
+  document.getElementById('tareasBody').innerHTML = list.map(t=>{
+    const overdue = t.vencimiento && t.vencimiento < hoy && !t.completada;
+    return `<tr class="${overdue?'overdue':''}">
+      <td><input type="checkbox" ${t.completada?'checked':''} onclick="event.stopPropagation();toggleTareaGlobal('${t.id}', this.checked)"></td>
+      <td>${t.titulo}</td>
+      <td>${t.leads?.empresa || ''}</td>
+      <td>${t.vencimiento ? fmtFecha(t.vencimiento) : '—'}</td>
+      <td>${t.owner||''}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="5" class="empty-state">No hay tareas pendientes</td></tr>`;
+}
+
+async function toggleTareaGlobal(id, completada){
+  const { data:{ user } } = await sb.auth.getUser();
+  await sb.from('tareas').update({
+    completada,
+    completada_en: completada ? new Date().toISOString() : null,
+  }).eq('id', id);
+  await cargarTareas();
+}
+
+/* ======================= COTIZADOR (form del modal) ======================= */
+function renderCotFormulario(){
+  const container = document.getElementById('cotGroupsForm');
+  container.innerHTML = COT_GROUPS.map(g=>{
+    const optsHtml = g.options.map(o=>{
+      const isOn = !!cotSelected[o.id];
+      const inputType = g.type==='checkbox' ? 'checkbox' : 'radio';
+      const locked = g.type==='locked';
+      return `<label class="cot-opt ${locked?'locked':''}">
+        <input type="${inputType}" name="cot-${g.id}" ${locked?'checked disabled':''} ${isOn?'checked':''}
+          onchange="toggleCotOpt('${g.id}','${o.id}','${g.type}')">
+        ${o.name}
+        <span class="price">${fmtMoney(o.price)}</span>
+      </label>`;
+    }).join('');
+    return `<div class="cot-group"><div class="cot-group-head"><span>${g.title}</span></div>${optsHtml}</div>`;
+  }).join('');
+}
+
+function toggleCotOpt(groupId, optId, type){
+  const group = COT_GROUPS.find(g=>g.id===groupId);
+  if(type==='radio' || type==='toggle'){
+    group.options.forEach(o=>{ delete cotSelected[o.id]; });
+    cotSelected[optId] = true;
+  } else { // checkbox
+    if(cotSelected[optId]) delete cotSelected[optId];
+    else cotSelected[optId] = true;
+  }
+  renderCotFormulario();
+}
+
+function getCotTotal(){
+  let total = 0;
+  COT_GROUPS.forEach(g=> g.options.forEach(o=>{ if(cotSelected[o.id] || g.type==='locked') total += o.price; }));
+  return total;
 }
 
 /* ======================= MODAL: crear / editar ======================= */
@@ -459,9 +678,12 @@ function openNewLead(){
   document.getElementById('f_origen').value='inbound';
   document.getElementById('f_owner').value='';
   document.getElementById('f_stage').value='contactar';
-  document.querySelectorAll('.pedido-item').forEach(c=>c.checked=false);
+  document.getElementById('f_tipo_evento').value='pago';
+  cotSelected = { landing_base:true };
+  renderCotFormulario();
   document.getElementById('btnEliminar').style.display='none';
   document.getElementById('workflowBox').style.display='none';
+  document.getElementById('tasksBoxModal').style.display='none';
   document.getElementById('modalBg').classList.add('active');
 }
 
@@ -483,10 +705,18 @@ async function openEditLead(id){
   document.getElementById('f_origen').value = l.origen||'inbound';
   document.getElementById('f_owner').value = l.owner||'';
   document.getElementById('f_stage').value = l.stage||'contactar';
+  document.getElementById('f_tipo_evento').value = l.tipo_evento||'pago';
   document.getElementById('f_motivo_perdido').value = l.motivo_perdido||'';
   document.getElementById('f_notes').value = l.notes||'';
+
+  // Reconstruir selección del cotizador a partir de pedido.items (strings "Grupo: Opción")
+  cotSelected = { landing_base:true };
   const items = (l.pedido && l.pedido.items) || [];
-  document.querySelectorAll('.pedido-item').forEach(c=> c.checked = items.includes(c.value));
+  COT_GROUPS.forEach(g=> g.options.forEach(o=>{
+    if(items.includes(`${g.title}: ${o.name}`)) cotSelected[o.id] = true;
+  }));
+  renderCotFormulario();
+
   document.getElementById('btnEliminar').style.display='inline-block';
 
   if(l.stage==='vendido'){
@@ -495,14 +725,24 @@ async function openEditLead(id){
   } else {
     document.getElementById('workflowBox').style.display='none';
   }
+
+  await renderTareasModal(l.id);
+  document.getElementById('tasksBoxModal').style.display='block';
+
   document.getElementById('modalBg').classList.add('active');
 }
 
 function closeModal(){ document.getElementById('modalBg').classList.remove('active'); }
 
 async function guardarLead(){
-  const items = Array.from(document.querySelectorAll('.pedido-item:checked')).map(c=>c.value);
-  const monto = document.getElementById('f_monto').value;
+  const cotTotal = getCotTotal();
+  const montoManual = document.getElementById('f_monto').value;
+  const monto = cotTotal || (montoManual ? Number(montoManual) : null);
+  const items = [];
+  COT_GROUPS.forEach(g=> g.options.forEach(o=>{
+    if(cotSelected[o.id] || g.type==='locked') items.push(`${g.title}: ${o.name}`);
+  }));
+
   const payload = {
     empresa: document.getElementById('f_empresa').value,
     persona: document.getElementById('f_persona').value,
@@ -513,13 +753,14 @@ async function guardarLead(){
     evento_nombre: document.getElementById('f_evento_nombre').value,
     evento_fecha: document.getElementById('f_evento_fecha').value || null,
     evento_lugar: document.getElementById('f_evento_lugar').value,
-    monto: monto ? Number(monto) : null,
+    monto: monto,
     origen: document.getElementById('f_origen').value,
     owner: document.getElementById('f_owner').value || null,
     stage: document.getElementById('f_stage').value,
+    tipo_evento: document.getElementById('f_tipo_evento').value,
     motivo_perdido: document.getElementById('f_motivo_perdido').value,
     notes: document.getElementById('f_notes').value,
-    pedido: { items, total_estimado: monto ? Number(monto) : null },
+    pedido: { items, total_estimado: cotTotal },
     is_draft: false,
   };
 
@@ -564,6 +805,49 @@ async function toggleWorkflowPaso(id, completado){
   if(currentEditId) renderWorkflow(currentEditId);
 }
 
+/* ======================= TAREAS (dentro de la ficha del lead) ======================= */
+async function renderTareasModal(leadId){
+  const { data, error } = await sb.from('tareas').select('*').eq('lead_id', leadId).order('vencimiento', { ascending:true, nullsFirst:false });
+  const hoy = new Date().toISOString().slice(0,10);
+  if(error){
+    document.getElementById('taskListModal').innerHTML = 'Corré migracion_v2.sql en Supabase para habilitar tareas.';
+    return;
+  }
+  document.getElementById('taskListModal').innerHTML = (data||[]).map(t=>{
+    const overdue = t.vencimiento && t.vencimiento < hoy && !t.completada;
+    return `<div class="task-row ${t.completada?'done':''} ${overdue?'overdue':''}">
+      <input type="checkbox" ${t.completada?'checked':''} onchange="toggleTareaModal('${t.id}', this.checked, '${leadId}')">
+      <label>${t.titulo}</label>
+      <span class="venc">${t.vencimiento ? fmtFecha(t.vencimiento) : ''}</span>
+    </div>`;
+  }).join('') || '<div style="font-size:12px;color:var(--muted);">Sin tareas todavía.</div>';
+}
+
+async function toggleTareaModal(id, completada, leadId){
+  await sb.from('tareas').update({
+    completada,
+    completada_en: completada ? new Date().toISOString() : null,
+  }).eq('id', id);
+  await renderTareasModal(leadId);
+  await cargarTareas();
+}
+
+async function agregarTarea(){
+  if(!currentEditId){ alert('Guardá el lead primero antes de agregar tareas.'); return; }
+  const titulo = document.getElementById('newTaskTitulo').value.trim();
+  const vencimiento = document.getElementById('newTaskVenc').value || null;
+  if(!titulo){ alert('Escribí una tarea.'); return; }
+  const { data:{ user } } = await sb.auth.getUser();
+  const { error } = await sb.from('tareas').insert({
+    lead_id: currentEditId, titulo, vencimiento, owner: user.email
+  });
+  if(error){ alert('Error: '+error.message+' (¿corriste migracion_v2.sql?)'); return; }
+  document.getElementById('newTaskTitulo').value = '';
+  document.getElementById('newTaskVenc').value = '';
+  await renderTareasModal(currentEditId);
+  await cargarTareas();
+}
+
 /* ======================= CARGA MASIVA CSV ======================= */
 let csvParsedRows = [];
 function procesarCSV(){
@@ -589,6 +873,7 @@ async function confirmarCargaCSV(){
     monto: r.monto ? Number(r.monto) : null,
     origen: (r.origen==='outbound') ? 'outbound' : 'inbound',
     stage: STAGES.map(s=>s[0]).includes(r.stage) ? r.stage : 'contactar',
+    tipo_evento: ['pago','gratis'].includes(r.tipo_evento) ? r.tipo_evento : 'pago',
     owner: r.owner || null, notes: r.notes || null, is_draft:false
   }));
   const { error } = await sb.from('leads').insert(rows);
