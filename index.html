@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM · EventosTuc</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{
+    --paper:#F6F4EE; --ink:#16232E; --blue:#2C5AA0; --amber:#E8A33D;
+    --line:#e2ddd0; --card:#ffffff; --muted:#6b7684;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;margin:0;}
+  mono{font-family:'JetBrains Mono',monospace;}
+  a{color:var(--blue);}
+
+  /* ---------- LOGIN ---------- */
+  #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+  #loginScreen .box{background:var(--card);padding:36px 32px;border-radius:14px;border:1px solid var(--line);width:320px;box-shadow:0 8px 24px rgba(22,35,46,.06);}
+  #loginScreen input{width:100%;padding:11px 12px;margin-top:6px;margin-bottom:14px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:14px;}
+  #loginScreen label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  #loginScreen button{width:100%;padding:11px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;font-size:14px;}
+  #loginError{color:#c0392b;font-size:13px;min-height:18px;}
+
+  /* ---------- APP SHELL ---------- */
+  #app{display:none;}
+  header.top{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--ink);color:#fff;}
+  header.top .brand{font-family:'Fraunces',serif;font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px;}
+  header.top .brand .dot{width:8px;height:8px;background:var(--amber);border-radius:50%;}
+  nav.tabs{display:flex;gap:4px;}
+  nav.tabs button{background:none;border:none;color:#cfd6dd;padding:8px 14px;border-radius:7px;cursor:pointer;font-size:14px;font-family:inherit;}
+  nav.tabs button.active{background:rgba(255,255,255,.12);color:#fff;font-weight:600;}
+  header.top .who{font-size:13px;color:#cfd6dd;display:flex;align-items:center;gap:12px;}
+  header.top .who button{background:none;border:1px solid #445;color:#cfd6dd;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;}
+
+  main{padding:24px;max-width:1280px;margin:0 auto;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ---------- DASHBOARD ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+  .kpi .num{font-family:'Fraunces',serif;font-size:28px;font-weight:700;}
+  .kpi .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+  .stage-bars{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;}
+  .stage-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;font-size:13px;}
+  .stage-row .lbl{width:150px;color:var(--muted);}
+  .stage-row .bar{flex:1;background:#eee;height:16px;border-radius:8px;overflow:hidden;}
+  .stage-row .fill{height:100%;background:var(--blue);}
+  .stage-row .n{width:30px;text-align:right;font-family:'JetBrains Mono',monospace;}
+
+  /* ---------- FILTERS ---------- */
+  .filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;align-items:center;}
+  .filters select,.filters input{padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:13px;background:#fff;}
+  .filters input[type=text]{min-width:200px;}
+  .btn{padding:9px 16px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;font-size:13px;font-family:inherit;}
+  .btn.amber{background:var(--amber);color:var(--ink);}
+  .btn.ghost{background:none;border:1px solid var(--line);color:var(--ink);}
+  .btn.danger{background:#c0392b;}
+  .btn:disabled{opacity:.5;cursor:default;}
+
+  /* ---------- PIPELINE / KANBAN ---------- */
+  .pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;overflow-x:auto;}
+  .stage-col{background:#efeadc;border-radius:12px;padding:10px;min-height:200px;}
+  .stage-col h3{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;}
+  .stage-col.draft-col{background:#f2e5d0;}
+  .lead-card{background:#fff;border-radius:9px;padding:10px 12px;margin-bottom:8px;cursor:pointer;border:1px solid var(--line);font-size:13px;}
+  .lead-card:hover{border-color:var(--blue);}
+  .lead-card .lc-top{display:flex;justify-content:space-between;align-items:start;}
+  .lead-card .lc-empresa{font-weight:600;}
+  .lead-card .lc-monto{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+  .badge{font-size:10px;padding:2px 6px;border-radius:5px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;}
+  .badge.inbound{background:#DCEBFB;color:var(--blue);}
+  .badge.outbound{background:#FBE7CE;color:#a8630f;}
+  .badge.draft{background:#eee;color:#888;}
+
+  /* ---------- TABLE VIEW (list) ---------- */
+  table.leads-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;font-size:13px;}
+  table.leads-table th{background:#efeadc;text-align:left;padding:9px 10px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
+  table.leads-table td{padding:9px 10px;border-top:1px solid var(--line);}
+  table.leads-table tr:hover{background:#faf9f5;cursor:pointer;}
+
+  /* ---------- MODAL ---------- */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(22,35,46,.45);z-index:50;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;}
+  .modal-bg.active{display:flex;}
+  .modal{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:640px;}
+  .modal h2{margin-bottom:18px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-grid label{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);display:block;margin-bottom:4px;}
+  .form-grid input,.form-grid select,.form-grid textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:13px;}
+  .form-grid .full{grid-column:1/-1;}
+  .modal-actions{display:flex;justify-content:space-between;margin-top:20px;gap:8px;}
+  .close-x{position:absolute;top:14px;right:18px;cursor:pointer;font-size:20px;color:var(--muted);background:none;border:none;}
+  .modal{position:relative;}
+
+  .workflow-box{margin-top:16px;background:#faf9f5;border:1px dashed var(--blue);border-radius:10px;padding:14px;}
+  .workflow-box h4{font-size:12px;text-transform:uppercase;color:var(--blue);margin-bottom:10px;}
+  .wf-item{display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0;}
+  .wf-item.done label{text-decoration:line-through;color:var(--muted);}
+
+  .items-check{display:flex;flex-wrap:wrap;gap:8px;}
+  .items-check label{display:flex;align-items:center;gap:5px;font-size:12px;background:#f4f1e8;padding:5px 9px;border-radius:6px;text-transform:none;letter-spacing:0;color:var(--ink);}
+
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+
+  @media (max-width:900px){
+    .pipeline{grid-template-columns:1fr;}
+    .form-grid{grid-template-columns:1fr;}
+    header.top{flex-direction:column;gap:10px;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============== LOGIN ============== -->
+<div id="loginScreen">
+  <h1 style="font-size:22px;">CRM · EventosTuc</h1>
+  <div class="box">
+    <label>Email</label>
+    <input type="email" id="loginEmail" placeholder="tu@eventostuc.com.ar">
+    <label>Contraseña</label>
+    <input type="password" id="loginPass" placeholder="••••••••">
+    <button onclick="doLogin()">Ingresar</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ============== APP ============== -->
+<div id="app">
+  <header class="top">
+    <div class="brand"><span class="dot"></span> EventosTuc CRM</div>
+    <nav class="tabs">
+      <button data-view="dashboard" class="active" onclick="showView('dashboard')">Dashboard</button>
+      <button data-view="pipeline" onclick="showView('pipeline')">Pipeline</button>
+      <button data-view="lista" onclick="showView('lista')">Listado</button>
+      <button data-view="carga" onclick="showView('carga')">Carga masiva</button>
+    </nav>
+    <div class="who">
+      <span id="whoami"></span>
+      <button onclick="openNewLead()">+ Nuevo lead</button>
+      <button onclick="doLogout()">Salir</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="view active">
+      <div class="kpis" id="kpis"></div>
+      <div class="stage-bars">
+        <h3 style="margin-bottom:14px;">Pipeline por etapa</h3>
+        <div id="stageBars"></div>
+      </div>
+    </section>
+
+    <!-- PIPELINE (kanban) -->
+    <section id="view-pipeline" class="view">
+      <div class="filters">
+        <input type="text" id="fSearch" placeholder="Buscar empresa, persona, evento..." oninput="renderAll()">
+        <select id="fOrigen" onchange="renderAll()">
+          <option value="">Origen: todos</option>
+          <option value="inbound">Inbound</option>
+          <option value="outbound">Outbound</option>
+        </select>
+        <select id="fOwner" onchange="renderAll()">
+          <option value="">Responsable: todos</option>
+          <option value="Javier">Javier</option>
+          <option value="Lourdes">Lourdes</option>
+        </select>
+        <label style="font-size:12px;display:flex;align-items:center;gap:5px;"><input type="checkbox" id="fDrafts" onchange="renderAll()"> mostrar borradores</label>
+      </div>
+      <div class="pipeline" id="pipelineCols"></div>
+    </section>
+
+    <!-- LISTADO -->
+    <section id="view-lista" class="view">
+      <div class="filters">
+        <input type="text" id="fSearch2" placeholder="Buscar..." oninput="renderAll()">
+        <select id="fStage2" onchange="renderAll()">
+          <option value="">Etapa: todas</option>
+          <option value="contactar">Contactar</option>
+          <option value="contactado">Contactado</option>
+          <option value="propuesta_enviada">Propuesta enviada</option>
+          <option value="hot_deal">Hot deal</option>
+          <option value="vendido">Vendido</option>
+          <option value="perdido">Perdido</option>
+        </select>
+        <select id="fOrigen2" onchange="renderAll()">
+          <option value="">Origen: todos</option>
+          <option value="inbound">Inbound</option>
+          <option value="outbound">Outbound</option>
+        </select>
+      </div>
+      <table class="leads-table">
+        <thead><tr>
+          <th>Empresa</th><th>Persona</th><th>Evento</th><th>Fecha</th><th>Monto</th><th>Origen</th><th>Etapa</th>
+        </tr></thead>
+        <tbody id="listaBody"></tbody>
+      </table>
+    </section>
+
+    <!-- CARGA MASIVA -->
+    <section id="view-carga" class="view">
+      <div style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;max-width:640px;">
+        <h3 style="margin-bottom:8px;">Carga masiva por CSV</h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+          Columnas esperadas (en este orden, con encabezado):<br>
+          <mono style="font-size:11px;">empresa,persona,instagram,web,telefono,mail,evento_nombre,evento_fecha,evento_lugar,monto,origen,stage,owner,notes</mono><br>
+          <span style="font-size:12px;">Fecha en formato AAAA-MM-DD. Origen: inbound/outbound. Stage: contactar/contactado/propuesta_enviada/hot_deal/vendido/perdido.</span>
+        </p>
+        <input type="file" id="csvFile" accept=".csv">
+        <div style="margin-top:14px;">
+          <button class="btn" onclick="procesarCSV()">Previsualizar</button>
+        </div>
+        <div id="csvPreview" style="margin-top:16px;font-size:12px;max-height:260px;overflow:auto;"></div>
+        <button class="btn amber" id="btnConfirmarCSV" style="display:none;margin-top:12px;" onclick="confirmarCargaCSV()">Confirmar carga</button>
+        <div id="csvResult" style="margin-top:10px;font-size:13px;"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============== MODAL LEAD ============== -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="close-x" onclick="closeModal()">×</button>
+    <h2 id="modalTitle">Nuevo lead</h2>
+    <div class="form-grid">
+      <div><label>Empresa</label><input id="f_empresa"></div>
+      <div><label>Persona de contacto</label><input id="f_persona"></div>
+      <div><label>Instagram</label><input id="f_instagram" placeholder="@usuario"></div>
+      <div><label>Web</label><input id="f_web" placeholder="https://"></div>
+      <div><label>Teléfono</label><input id="f_telefono"></div>
+      <div><label>Mail</label><input id="f_mail"></div>
+      <div><label>Nombre del evento</label><input id="f_evento_nombre"></div>
+      <div><label>Fecha del evento</label><input type="date" id="f_evento_fecha"></div>
+      <div><label>Lugar del evento</label><input id="f_evento_lugar"></div>
+      <div><label>Monto ($)</label><input type="number" id="f_monto"></div>
+      <div><label>Origen</label>
+        <select id="f_origen"><option value="inbound">Inbound</option><option value="outbound">Outbound</option></select>
+      </div>
+      <div><label>Responsable</label>
+        <select id="f_owner"><option value="">—</option><option value="Javier">Javier</option><option value="Lourdes">Lourdes</option></select>
+      </div>
+      <div><label>Etapa</label>
+        <select id="f_stage">
+          <option value="contactar">Contactar</option>
+          <option value="contactado">Contactado</option>
+          <option value="propuesta_enviada">Propuesta enviada</option>
+          <option value="hot_deal">Hot deal</option>
+          <option value="vendido">Vendido</option>
+          <option value="perdido">Perdido</option>
+        </select>
+      </div>
+      <div><label>Motivo (si perdido)</label><input id="f_motivo_perdido"></div>
+      <div class="full"><label>Pedido (ítems solicitados)</label>
+        <div class="items-check">
+          <label><input type="checkbox" value="Landing + inscripción" class="pedido-item"> Landing + inscripción</label>
+          <label><input type="checkbox" value="Checkout con pago" class="pedido-item"> Checkout con pago</label>
+          <label><input type="checkbox" value="Panel admin" class="pedido-item"> Panel admin</label>
+          <label><input type="checkbox" value="Certificados" class="pedido-item"> Certificados</label>
+        </div>
+      </div>
+      <div class="full"><label>Notas</label><textarea id="f_notes" rows="3"></textarea></div>
+    </div>
+
+    <div class="workflow-box" id="workflowBox" style="display:none;">
+      <h4>Workflow post-venta (interno, no visible al cliente)</h4>
+      <div id="wfList"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn danger" id="btnEliminar" style="display:none;" onclick="eliminarLead()">Eliminar</button>
+      <div style="display:flex;gap:8px;margin-left:auto;">
+        <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn" onclick="guardarLead()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======================= CONFIG ======================= */
+const SUPABASE_URL = "https://gkvrgvziqbojiltpyuoh.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrdnJndnppcWJvamlsdHB5dW9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNDk0MzMsImV4cCI6MjEwMjgyNTQzM30.LkVrCP9Gjg-9k_rcV-LzyBs613IpcaPYKmz2GQiDYS4";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const STAGES = [
+  ["contactar","Contactar"],
+  ["contactado","Contactado"],
+  ["propuesta_enviada","Propuesta enviada"],
+  ["hot_deal","Hot deal"],
+  ["vendido","Vendido"],
+  ["perdido","Perdido"],
+];
+
+let LEADS = [];
+let currentEditId = null;
+
+/* ======================= AUTH ======================= */
+async function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPass').value;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){ document.getElementById('loginError').textContent = "Usuario o contraseña incorrectos."; return; }
+  await afterLogin();
+}
+async function doLogout(){ await sb.auth.signOut(); location.reload(); }
+
+async function afterLogin(){
+  const { data:{ user } } = await sb.auth.getUser();
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('whoami').textContent = user.email;
+  await cargarLeads();
+}
+
+async function checkSession(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session) await afterLogin();
+}
+checkSession();
+
+/* ======================= DATA ======================= */
+async function cargarLeads(){
+  const { data, error } = await sb.from('leads').select('*').order('created_at', { ascending:false });
+  if(error){ alert('Error cargando leads: '+error.message); return; }
+  LEADS = data || [];
+  renderAll();
+}
+
+function showView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+  renderAll();
+}
+
+function fmtMoney(n){ if(n==null) return '—'; return '$'+Number(n).toLocaleString('es-AR'); }
+
+/* ======================= RENDER: DASHBOARD ======================= */
+function renderDashboard(){
+  const real = LEADS.filter(l=>!l.is_draft);
+  const vendidos = real.filter(l=>l.stage==='vendido');
+  const activos = real.filter(l=>!['vendido','perdido'].includes(l.stage));
+  const inbound = real.filter(l=>l.origen==='inbound').length;
+  const outbound = real.filter(l=>l.origen==='outbound').length;
+  const montoVendido = vendidos.reduce((a,l)=>a+(Number(l.monto)||0),0);
+  const drafts = LEADS.filter(l=>l.is_draft).length;
+
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><div class="num">${real.length}</div><div class="label">Leads totales</div></div>
+    <div class="kpi"><div class="num">${activos.length}</div><div class="label">Activos en pipeline</div></div>
+    <div class="kpi"><div class="num">${vendidos.length}</div><div class="label">Vendidos</div></div>
+    <div class="kpi"><div class="num">${fmtMoney(montoVendido)}</div><div class="label">Monto vendido</div></div>
+    <div class="kpi"><div class="num">${inbound} / ${outbound}</div><div class="label">Inbound / Outbound</div></div>
+    <div class="kpi"><div class="num">${drafts}</div><div class="label">Solicitudes sin enviar</div></div>
+  `;
+
+  const max = Math.max(1, ...STAGES.map(([k])=>real.filter(l=>l.stage===k).length));
+  document.getElementById('stageBars').innerHTML = STAGES.map(([k,label])=>{
+    const n = real.filter(l=>l.stage===k).length;
+    return `<div class="stage-row"><div class="lbl">${label}</div><div class="bar"><div class="fill" style="width:${(n/max*100)||0}%"></div></div><div class="n">${n}</div></div>`;
+  }).join('');
+}
+
+/* ======================= FILTER HELPERS ======================= */
+function matchSearch(l, q){
+  if(!q) return true;
+  q = q.toLowerCase();
+  return [l.empresa,l.persona,l.evento_nombre,l.mail].filter(Boolean).join(' ').toLowerCase().includes(q);
+}
+
+/* ======================= RENDER: PIPELINE (kanban) ======================= */
+function renderPipeline(){
+  const q = document.getElementById('fSearch').value;
+  const fOrigen = document.getElementById('fOrigen').value;
+  const fOwner = document.getElementById('fOwner').value;
+  const showDrafts = document.getElementById('fDrafts').checked;
+
+  let list = LEADS.filter(l=>{
+    if(l.is_draft && !showDrafts) return false;
+    if(fOrigen && l.origen!==fOrigen) return false;
+    if(fOwner && l.owner!==fOwner) return false;
+    return matchSearch(l,q);
+  });
+
+  let html = '';
+  STAGES.forEach(([key,label])=>{
+    const items = list.filter(l=>l.stage===key && !l.is_draft);
+    html += `<div class="stage-col"><h3>${label} <span>${items.length}</span></h3>`;
+    items.forEach(l=> html += leadCardHtml(l));
+    html += `</div>`;
+  });
+
+  if(showDrafts){
+    const drafts = list.filter(l=>l.is_draft);
+    html += `<div class="stage-col draft-col"><h3>Borradores (sin enviar) <span>${drafts.length}</span></h3>`;
+    drafts.forEach(l=> html += leadCardHtml(l));
+    html += `</div>`;
+  }
+
+  document.getElementById('pipelineCols').innerHTML = html;
+}
+
+function leadCardHtml(l){
+  return `<div class="lead-card" onclick="openEditLead('${l.id}')">
+    <div class="lc-top">
+      <div class="lc-empresa">${l.empresa || '(sin empresa)'}</div>
+      <span class="badge ${l.is_draft?'draft':l.origen}">${l.is_draft?'borrador':l.origen}</span>
+    </div>
+    <div style="color:var(--muted);margin:3px 0;">${l.evento_nombre||''}</div>
+    <div class="lc-monto">${fmtMoney(l.monto)}</div>
+  </div>`;
+}
+
+/* ======================= RENDER: LISTADO ======================= */
+function renderLista(){
+  const q = document.getElementById('fSearch2').value;
+  const fStage = document.getElementById('fStage2').value;
+  const fOrigen = document.getElementById('fOrigen2').value;
+
+  let list = LEADS.filter(l=>{
+    if(l.is_draft) return false;
+    if(fStage && l.stage!==fStage) return false;
+    if(fOrigen && l.origen!==fOrigen) return false;
+    return matchSearch(l,q);
+  });
+
+  document.getElementById('listaBody').innerHTML = list.map(l=>`
+    <tr onclick="openEditLead('${l.id}')">
+      <td>${l.empresa||''}</td>
+      <td>${l.persona||''}</td>
+      <td>${l.evento_nombre||''}</td>
+      <td>${l.evento_fecha||''}</td>
+      <td>${fmtMoney(l.monto)}</td>
+      <td><span class="badge ${l.origen}">${l.origen}</span></td>
+      <td>${STAGES.find(s=>s[0]===l.stage)?.[1]||l.stage}</td>
+    </tr>`).join('') || `<tr><td colspan="7" class="empty-state">Sin resultados</td></tr>`;
+}
+
+function renderAll(){
+  renderDashboard();
+  renderPipeline();
+  renderLista();
+}
+
+/* ======================= MODAL: crear / editar ======================= */
+function openNewLead(){
+  currentEditId = null;
+  document.getElementById('modalTitle').textContent = 'Nuevo lead';
+  ['empresa','persona','instagram','web','telefono','mail','evento_nombre','evento_fecha','evento_lugar','monto','motivo_perdido','notes']
+    .forEach(f=>document.getElementById('f_'+f).value='');
+  document.getElementById('f_origen').value='inbound';
+  document.getElementById('f_owner').value='';
+  document.getElementById('f_stage').value='contactar';
+  document.querySelectorAll('.pedido-item').forEach(c=>c.checked=false);
+  document.getElementById('btnEliminar').style.display='none';
+  document.getElementById('workflowBox').style.display='none';
+  document.getElementById('modalBg').classList.add('active');
+}
+
+async function openEditLead(id){
+  const l = LEADS.find(x=>x.id===id);
+  if(!l) return;
+  currentEditId = id;
+  document.getElementById('modalTitle').textContent = l.is_draft ? 'Borrador (solicitud sin enviar)' : 'Editar lead';
+  document.getElementById('f_empresa').value = l.empresa||'';
+  document.getElementById('f_persona').value = l.persona||'';
+  document.getElementById('f_instagram').value = l.instagram||'';
+  document.getElementById('f_web').value = l.web||'';
+  document.getElementById('f_telefono').value = l.telefono||'';
+  document.getElementById('f_mail').value = l.mail||'';
+  document.getElementById('f_evento_nombre').value = l.evento_nombre||'';
+  document.getElementById('f_evento_fecha').value = l.evento_fecha||'';
+  document.getElementById('f_evento_lugar').value = l.evento_lugar||'';
+  document.getElementById('f_monto').value = l.monto||'';
+  document.getElementById('f_origen').value = l.origen||'inbound';
+  document.getElementById('f_owner').value = l.owner||'';
+  document.getElementById('f_stage').value = l.stage||'contactar';
+  document.getElementById('f_motivo_perdido').value = l.motivo_perdido||'';
+  document.getElementById('f_notes').value = l.notes||'';
+  const items = (l.pedido && l.pedido.items) || [];
+  document.querySelectorAll('.pedido-item').forEach(c=> c.checked = items.includes(c.value));
+  document.getElementById('btnEliminar').style.display='inline-block';
+
+  if(l.stage==='vendido'){
+    await renderWorkflow(l.id);
+    document.getElementById('workflowBox').style.display='block';
+  } else {
+    document.getElementById('workflowBox').style.display='none';
+  }
+  document.getElementById('modalBg').classList.add('active');
+}
+
+function closeModal(){ document.getElementById('modalBg').classList.remove('active'); }
+
+async function guardarLead(){
+  const items = Array.from(document.querySelectorAll('.pedido-item:checked')).map(c=>c.value);
+  const monto = document.getElementById('f_monto').value;
+  const payload = {
+    empresa: document.getElementById('f_empresa').value,
+    persona: document.getElementById('f_persona').value,
+    instagram: document.getElementById('f_instagram').value,
+    web: document.getElementById('f_web').value,
+    telefono: document.getElementById('f_telefono').value,
+    mail: document.getElementById('f_mail').value,
+    evento_nombre: document.getElementById('f_evento_nombre').value,
+    evento_fecha: document.getElementById('f_evento_fecha').value || null,
+    evento_lugar: document.getElementById('f_evento_lugar').value,
+    monto: monto ? Number(monto) : null,
+    origen: document.getElementById('f_origen').value,
+    owner: document.getElementById('f_owner').value || null,
+    stage: document.getElementById('f_stage').value,
+    motivo_perdido: document.getElementById('f_motivo_perdido').value,
+    notes: document.getElementById('f_notes').value,
+    pedido: { items, total_estimado: monto ? Number(monto) : null },
+    is_draft: false,
+  };
+
+  let error;
+  if(currentEditId){
+    ({ error } = await sb.from('leads').update(payload).eq('id', currentEditId));
+  } else {
+    ({ error } = await sb.from('leads').insert(payload));
+  }
+  if(error){ alert('Error guardando: '+error.message); return; }
+  closeModal();
+  await cargarLeads();
+}
+
+async function eliminarLead(){
+  if(!currentEditId) return;
+  if(!confirm('¿Eliminar este lead definitivamente?')) return;
+  const { error } = await sb.from('leads').delete().eq('id', currentEditId);
+  if(error){ alert('Error: '+error.message); return; }
+  closeModal();
+  await cargarLeads();
+}
+
+/* ======================= WORKFLOW POST-VENTA ======================= */
+async function renderWorkflow(leadId){
+  const { data, error } = await sb.from('venta_workflow').select('*').eq('lead_id', leadId).order('orden');
+  if(error){ document.getElementById('wfList').innerHTML = 'Error cargando workflow.'; return; }
+  document.getElementById('wfList').innerHTML = (data||[]).map(w=>`
+    <div class="wf-item ${w.completado?'done':''}">
+      <input type="checkbox" ${w.completado?'checked':''} onchange="toggleWorkflowPaso('${w.id}', this.checked)">
+      <label>${w.paso}</label>
+    </div>`).join('') || 'Sin pasos (se crean automáticamente al mover a Vendido).';
+}
+
+async function toggleWorkflowPaso(id, completado){
+  const { data:{ user } } = await sb.auth.getUser();
+  await sb.from('venta_workflow').update({
+    completado,
+    completado_en: completado ? new Date().toISOString() : null,
+    completado_por: completado ? user.email : null
+  }).eq('id', id);
+  if(currentEditId) renderWorkflow(currentEditId);
+}
+
+/* ======================= CARGA MASIVA CSV ======================= */
+let csvParsedRows = [];
+function procesarCSV(){
+  const file = document.getElementById('csvFile').files[0];
+  if(!file){ alert('Elegí un archivo CSV primero.'); return; }
+  Papa.parse(file, {
+    header:true, skipEmptyLines:true,
+    complete: (res)=>{
+      csvParsedRows = res.data;
+      document.getElementById('csvPreview').innerHTML =
+        `<b>${csvParsedRows.length} filas detectadas.</b><br><br>` +
+        csvParsedRows.slice(0,5).map(r=>`${r.empresa||'(sin empresa)'} — ${r.evento_nombre||''}`).join('<br>');
+      document.getElementById('btnConfirmarCSV').style.display = csvParsedRows.length ? 'inline-block' : 'none';
+    }
+  });
+}
+async function confirmarCargaCSV(){
+  if(!csvParsedRows.length) return;
+  const rows = csvParsedRows.map(r=>({
+    empresa:r.empresa||null, persona:r.persona||null, instagram:r.instagram||null, web:r.web||null,
+    telefono:r.telefono||null, mail:r.mail||null, evento_nombre:r.evento_nombre||null,
+    evento_fecha:r.evento_fecha||null, evento_lugar:r.evento_lugar||null,
+    monto: r.monto ? Number(r.monto) : null,
+    origen: (r.origen==='outbound') ? 'outbound' : 'inbound',
+    stage: STAGES.map(s=>s[0]).includes(r.stage) ? r.stage : 'contactar',
+    owner: r.owner || null, notes: r.notes || null, is_draft:false
+  }));
+  const { error } = await sb.from('leads').insert(rows);
+  document.getElementById('csvResult').textContent = error ? ('Error: '+error.message) : `Se cargaron ${rows.length} leads correctamente.`;
+  if(!error){ csvParsedRows=[]; document.getElementById('btnConfirmarCSV').style.display='none'; await cargarLeads(); }
+}
+</script>
+</body>
+</html>
