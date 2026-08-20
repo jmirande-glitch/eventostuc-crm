@@ -484,10 +484,10 @@ function renderKpis(){
 
   document.getElementById('kpis').innerHTML = `
     <div class="kpi"><div class="num">${activos.length}</div><div class="label">Leads activos</div></div>
-    <div class="kpi"><div class="num">${conversion}%</div><div class="label">Tasa de conversión</div></div>
     <div class="kpi"><div class="num">${propuestas.length}</div><div class="label">Presupuestos enviados</div></div>
-    <div class="kpi"><div class="num">${fmtMoney(montoVendido)}</div><div class="label">Ingresos ganados</div><div class="sub">Eventos confirmados</div></div>
     <div class="kpi forecast"><div class="num">${fmtMoney(pronostico)}</div><div class="label">Pronóstico (hot deals)</div><div class="sub">${hotDeals.length} deal${hotDeals.length!==1?'s':''} en negociación avanzada</div></div>
+    <div class="kpi"><div class="num">${fmtMoney(montoVendido)}</div><div class="label">Ingresos ganados</div><div class="sub">Eventos confirmados</div></div>
+    <div class="kpi"><div class="num">${conversion}%</div><div class="label">Tasa de conversión</div></div>
   `;
 }
 
