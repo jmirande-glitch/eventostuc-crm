@@ -128,12 +128,26 @@
   .task-add input[type=text]{flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:12px;}
   .task-add input[type=date]{padding:7px 9px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:12px;}
 
-  .cot-groups{display:flex;flex-direction:column;gap:10px;}
-  .cot-group{border:1px solid var(--line);border-radius:8px;padding:10px 12px;}
-  .cot-group-head{display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-  .cot-opt{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;cursor:pointer;}
+  .cot-groups{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .cot-total-bar{display:flex;justify-content:space-between;align-items:center;background:#faf6ec;padding:10px 14px;border-bottom:1px solid var(--line);}
+  .cot-total-bar .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);}
+  .cot-total-bar .amt{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:15px;color:var(--ink);}
+  .cot-group{border-bottom:1px solid var(--line);}
+  .cot-group:last-child{border-bottom:none;}
+  .cot-group-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;font-size:13px;user-select:none;}
+  .cot-group-head:hover{background:#faf9f5;}
+  .cot-group.locked .cot-group-head{cursor:default;}
+  .cot-group-head .title{font-weight:600;display:flex;align-items:center;gap:6px;}
+  .cot-group-head .chev{font-size:10px;color:var(--muted);transition:transform .15s;}
+  .cot-group.open .cot-group-head .chev{transform:rotate(90deg);}
+  .cot-group-head .summary{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:8px;}
+  .cot-group-head .summary .price{font-family:'JetBrains Mono',monospace;color:var(--ink);font-weight:600;}
+  .cot-group-body{display:none;padding:2px 14px 10px 14px;}
+  .cot-group.open .cot-group-body{display:block;}
+  .cot-opt{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;cursor:pointer;}
   .cot-opt.locked{cursor:default;color:var(--muted);}
   .cot-opt .price{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+  .cot-opt-desc{font-size:11px;color:var(--muted);margin-left:24px;margin-top:-3px;margin-bottom:2px;}
 
   .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
 
@@ -633,22 +647,45 @@ async function toggleTareaGlobal(id, completada){
 }
 
 /* ======================= COTIZADOR (form del modal) ======================= */
+let cotOpenGroup = null; // id del grupo actualmente desplegado (solo uno a la vez)
+
 function renderCotFormulario(){
   const container = document.getElementById('cotGroupsForm');
-  container.innerHTML = COT_GROUPS.map(g=>{
+  const totalBar = `<div class="cot-total-bar"><span class="lbl">Total del pedido</span><span class="amt">${fmtMoney(getCotTotal())}</span></div>`;
+
+  const groupsHtml = COT_GROUPS.map(g=>{
+    const locked = g.type==='locked';
+    const isOpen = cotOpenGroup === g.id;
+    const selectedOpts = g.options.filter(o=> locked || cotSelected[o.id]);
+    const summaryText = locked ? '' : (selectedOpts.length ? selectedOpts.map(o=>o.name).join(', ') : 'Sin elegir');
+    const summaryPrice = selectedOpts.reduce((s,o)=>s+o.price,0);
+
     const optsHtml = g.options.map(o=>{
       const isOn = !!cotSelected[o.id];
       const inputType = g.type==='checkbox' ? 'checkbox' : 'radio';
-      const locked = g.type==='locked';
       return `<label class="cot-opt ${locked?'locked':''}">
         <input type="${inputType}" name="cot-${g.id}" ${locked?'checked disabled':''} ${isOn?'checked':''}
-          onchange="toggleCotOpt('${g.id}','${o.id}','${g.type}')">
+          onchange="toggleCotOpt('${g.id}','${o.id}','${g.type}')" onclick="event.stopPropagation()">
         ${o.name}
         <span class="price">${fmtMoney(o.price)}</span>
       </label>`;
     }).join('');
-    return `<div class="cot-group"><div class="cot-group-head"><span>${g.title}</span></div>${optsHtml}</div>`;
+
+    return `<div class="cot-group ${isOpen?'open':''} ${locked?'locked':''}">
+      <div class="cot-group-head" onclick="${locked?'':`toggleCotGroupOpen('${g.id}')`}">
+        <span class="title">${!locked?`<span class="chev">▶</span>`:''}${g.title}</span>
+        <span class="summary">${locked?'Siempre incluido':summaryText}<span class="price">${fmtMoney(locked?g.options[0].price:summaryPrice)}</span></span>
+      </div>
+      ${!locked?`<div class="cot-group-body">${optsHtml}</div>`:''}
+    </div>`;
   }).join('');
+
+  container.innerHTML = totalBar + groupsHtml;
+}
+
+function toggleCotGroupOpen(groupId){
+  cotOpenGroup = (cotOpenGroup === groupId) ? null : groupId;
+  renderCotFormulario();
 }
 
 function toggleCotOpt(groupId, optId, type){
@@ -680,6 +717,7 @@ function openNewLead(){
   document.getElementById('f_stage').value='contactar';
   document.getElementById('f_tipo_evento').value='pago';
   cotSelected = { landing_base:true };
+  cotOpenGroup = null;
   renderCotFormulario();
   document.getElementById('btnEliminar').style.display='none';
   document.getElementById('workflowBox').style.display='none';
@@ -711,6 +749,7 @@ async function openEditLead(id){
 
   // Reconstruir selección del cotizador a partir de pedido.items (strings "Grupo: Opción")
   cotSelected = { landing_base:true };
+  cotOpenGroup = null;
   const items = (l.pedido && l.pedido.items) || [];
   COT_GROUPS.forEach(g=> g.options.forEach(o=>{
     if(items.includes(`${g.title}: ${o.name}`)) cotSelected[o.id] = true;
