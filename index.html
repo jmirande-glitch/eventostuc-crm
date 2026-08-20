@@ -28,8 +28,9 @@
   #loginScreen button{width:100%;padding:11px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-weight:600;cursor:pointer;font-size:14px;}
   #loginError{color:#c0392b;font-size:13px;min-height:18px;}
   .pw-wrap{position:relative;}
-  .pw-wrap input{margin-bottom:0;padding-right:52px;}
-  .pw-toggle{position:absolute;right:8px;top:6px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:6px 6px;width:auto;text-transform:uppercase;letter-spacing:.03em;}
+  .pw-wrap input{margin-bottom:0;padding-right:40px;}
+  #loginScreen .pw-wrap button.pw-toggle{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:32px;height:32px;padding:0;background:none;border:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;}
+  #loginScreen .pw-wrap button.pw-toggle:hover{color:var(--ink);}
 
   /* ---------- APP SHELL ---------- */
   #app{display:none;}
@@ -151,6 +152,27 @@
 
   .empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
 
+  /* ---------- CALENDARIO ---------- */
+  .cal-month{margin-bottom:22px;}
+  .cal-month-title{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+  .cal-row{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:8px;cursor:pointer;}
+  .cal-row:hover{border-color:var(--blue);}
+  .cal-date{width:56px;text-align:center;flex-shrink:0;}
+  .cal-date .day{font-family:'Fraunces',serif;font-weight:700;font-size:20px;line-height:1;}
+  .cal-date .wd{font-size:10px;text-transform:uppercase;color:var(--muted);}
+  .cal-info{flex:1;min-width:0;}
+  .cal-info .cal-empresa{font-weight:600;font-size:14px;}
+  .cal-info .cal-sub{font-size:12px;color:var(--muted);}
+  .cal-stage{font-size:11px;padding:4px 10px;border-radius:12px;font-weight:600;white-space:nowrap;}
+  .cal-stage.contactar{background:#eee;color:#666;}
+  .cal-stage.contactado{background:#DCEBFB;color:var(--blue);}
+  .cal-stage.propuesta_enviada{background:#FBE7CE;color:#a8630f;}
+  .cal-stage.hot_deal{background:#fde4d1;color:#c0521a;}
+  .cal-stage.vendido{background:#dcf5e2;color:#2d7a44;}
+  .cal-stage.perdido{background:#fbdada;color:#b23434;}
+  .cal-monto{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink);white-space:nowrap;}
+  .cal-row.pasado{opacity:.55;}
+
   @media (max-width:900px){
     .pipeline{grid-template-columns:1fr;}
     .form-grid{grid-template-columns:1fr;}
@@ -169,7 +191,7 @@
     <label>Contraseña</label>
     <div class="pw-wrap">
       <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-      <button type="button" class="pw-toggle" onclick="togglePw()">Mostrar</button>
+      <button type="button" class="pw-toggle" onclick="togglePw()">👁</button>
     </div>
     <button onclick="doLogin()">Ingresar</button>
     <div id="loginError"></div>
@@ -182,6 +204,7 @@
     <div class="brand"><span class="dot"></span> EventosTuc CRM</div>
     <nav class="tabs">
       <button data-view="pipeline" class="active" onclick="showView('pipeline')">Pipeline</button>
+      <button data-view="calendario" onclick="showView('calendario')">Calendario</button>
       <button data-view="tareas" onclick="showView('tareas')">Tareas</button>
       <button data-view="carga" onclick="showView('carga')">Carga masiva</button>
     </nav>
@@ -229,6 +252,21 @@
         </tr></thead>
         <tbody id="listaBody"></tbody>
       </table>
+    </section>
+
+    <!-- CALENDARIO -->
+    <section id="view-calendario" class="view">
+      <div class="page-head">
+        <div>
+          <h1>Calendario de eventos</h1>
+          <p>Próximos eventos de leads y clientes, ordenados por fecha. Se actualiza solo desde el pipeline.</p>
+        </div>
+      </div>
+      <div class="filters">
+        <input type="text" id="fSearchCal" placeholder="Buscar empresa o evento..." oninput="renderCalendario()" style="min-width:220px;">
+        <label style="font-size:12px;display:flex;align-items:center;gap:5px;white-space:nowrap;"><input type="checkbox" id="fCalPasados" onchange="renderCalendario()"> incluir eventos pasados</label>
+      </div>
+      <div id="calendarioList"></div>
     </section>
 
     <!-- TAREAS -->
@@ -415,8 +453,8 @@ let draggedLeadId = null;
 function togglePw(){
   const inp = document.getElementById('loginPass');
   const btn = document.querySelector('.pw-toggle');
-  if(inp.type === 'password'){ inp.type = 'text'; btn.textContent = 'Ocultar'; }
-  else { inp.type = 'password'; btn.textContent = 'Mostrar'; }
+  if(inp.type === 'password'){ inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
 }
 
 async function doLogin(){
@@ -465,6 +503,7 @@ function showView(v){
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
   if(v==='pipeline') renderAll();
   if(v==='tareas') renderTareas();
+  if(v==='calendario') renderCalendario();
 }
 
 function fmtMoney(n){ if(n==null) return '—'; return '$'+Number(n).toLocaleString('es-AR'); }
@@ -613,6 +652,57 @@ function renderAll(){
   renderKpis();
   if(pipelineMode==='kanban') renderPipeline();
   else renderLista();
+}
+
+/* ======================= CALENDARIO DE EVENTOS ======================= */
+const DIAS_SEMANA = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function renderCalendario(){
+  const q = (document.getElementById('fSearchCal').value || '').toLowerCase();
+  const incluirPasados = document.getElementById('fCalPasados').checked;
+  const hoy = new Date().toISOString().slice(0,10);
+
+  let eventos = LEADS.filter(l=> !l.is_draft && l.evento_fecha && l.stage!=='perdido');
+  if(!incluirPasados) eventos = eventos.filter(l=> l.evento_fecha >= hoy);
+  if(q) eventos = eventos.filter(l=> [l.empresa,l.evento_nombre].filter(Boolean).join(' ').toLowerCase().includes(q));
+  eventos.sort((a,b)=> a.evento_fecha.localeCompare(b.evento_fecha));
+
+  if(!eventos.length){
+    document.getElementById('calendarioList').innerHTML = `<div class="empty-state">No hay eventos ${incluirPasados?'':'futuros '}cargados con fecha todavía.</div>`;
+    return;
+  }
+
+  // Agrupar por mes/año
+  const grupos = {};
+  eventos.forEach(l=>{
+    const [y,m] = l.evento_fecha.split('-');
+    const key = `${y}-${m}`;
+    if(!grupos[key]) grupos[key] = [];
+    grupos[key].push(l);
+  });
+
+  const html = Object.keys(grupos).sort().map(key=>{
+    const [y,m] = key.split('-');
+    const titulo = `${MESES[Number(m)-1]} ${y}`;
+    const rows = grupos[key].map(l=>{
+      const d = new Date(l.evento_fecha+'T00:00:00');
+      const stageLabel = STAGES.find(s=>s[0]===l.stage)?.[1] || l.stage;
+      const pasado = l.evento_fecha < hoy;
+      return `<div class="cal-row ${pasado?'pasado':''}" onclick="openEditLead('${l.id}')">
+        <div class="cal-date"><div class="day">${String(d.getDate()).padStart(2,'0')}</div><div class="wd">${DIAS_SEMANA[d.getDay()]}</div></div>
+        <div class="cal-info">
+          <div class="cal-empresa">${l.empresa || '(sin empresa)'}</div>
+          <div class="cal-sub">${l.evento_nombre || ''}${l.evento_lugar?' · '+l.evento_lugar:''}</div>
+        </div>
+        <span class="cal-stage ${l.stage}">${stageLabel}</span>
+        <div class="cal-monto">${fmtMoney(l.monto)}</div>
+      </div>`;
+    }).join('');
+    return `<div class="cal-month"><div class="cal-month-title">${titulo}</div>${rows}</div>`;
+  }).join('');
+
+  document.getElementById('calendarioList').innerHTML = html;
 }
 
 /* ======================= TAREAS (vista global) ======================= */
